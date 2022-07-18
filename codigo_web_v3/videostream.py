@@ -13,8 +13,8 @@ class VideoStream:
 	def start(self):
 		# start the thread to read frames from the video stream
 		self.running = True
-		self.t_cap = Thread(target=self.update, args=())
-		self.t_cap.start()
+		self.t = Thread(target=self.update, args=())
+		self.t.start()
 		return self
 
 	def update(self):
@@ -29,5 +29,5 @@ class VideoStream:
 	def stop(self):
 		# indicate that the thread should be stopped
 		self.running = False
-		self.t_cap.join()
+		self.t.join()
 		self.capture.release()
