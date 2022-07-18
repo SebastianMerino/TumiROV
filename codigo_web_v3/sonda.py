@@ -7,14 +7,13 @@ class Sonda:
 	def __init__(self):
 		# Configuring serial connections
 		self.ser = serial.Serial(
-			port='COM5',
+			port='/dev/ttyUSB0',
 			baudrate=38400,
 			timeout=None,
 			parity=serial.PARITY_NONE,
 			stopbits=serial.STOPBITS_ONE,
 			bytesize=serial.EIGHTBITS
 		)
-		self.data_arr_str = None
 		self.data_json = None
 		self.data_ready = False
 
@@ -35,8 +34,8 @@ class Sonda:
 		self.ser.timeout = 10
 		self.running = True
 		self.ser.write('a'.encode())	# Cualquier tecla para empezar comunicacion
-		self.t_read = threading.Thread(target=self.update)
-		self.t_read.start()
+		self.t = threading.Thread(target=self.update)
+		self.t.start()
 		# Espera a que esté listo el primer dato 
 		while not self.data_ready:
 			pass
@@ -54,15 +53,12 @@ class Sonda:
 				continue
 			if ord(data[-3]) > ord('9'):
 				continue	# si no es una cifra
-			self.data_arr_str = data.split()
+			data_arr = data.split()
 			
 			# Convierte a json
-			data_arr = []
 			for j in range(8):
 				if j!= 7:
-					data_arr.append(float(self.data_arr_str[j]))
-				else:
-					data_arr.append(self.data_arr_str[7])
+					data_arr[j] = float(data_arr[j])
 			data_dict = dict(zip(Sonda.keys,data_arr))
 			self.data_json = json.dumps(data_dict)
 			
@@ -71,7 +67,7 @@ class Sonda:
 	# Para el thread de adquisición
 	def stop(self):
 		self.running = False
-		self.t_read.join()
+		self.t.join()
 
 	# Apagar sonda
 	def shutdown(self):
