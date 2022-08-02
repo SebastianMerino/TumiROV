@@ -8,7 +8,7 @@ app = Flask(__name__)		# initialize a flask object
 fuente = "rtsp://192.168.226.201:554"
 vs1 = VideoStream(fuente).start()
 
-fuente2 = "rtsp://192.168.226.202:554"
+fuente2 = "rtsp://192.168.226.203:554"
 vs2 = VideoStream(fuente2).start()
 
 def generate(vs):
