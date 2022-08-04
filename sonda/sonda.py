@@ -1,25 +1,19 @@
-import serial, json, threading
+import serial, threading
 
 class Sonda:
 	input_bytes = 'cmd>'.encode()
 	keys = ['press','temp','cond','sal','O2sat','O2ppm','pH','time']
 
-	def __init__(self):
-		# Configuring serial connections
-		self.ser = serial.Serial(
-			port='COM5',
-			baudrate=38400,
-			timeout=100,
-			parity=serial.PARITY_NONE,
-			stopbits=serial.STOPBITS_ONE,
-			bytesize=serial.EIGHTBITS
-		)
-		self.data_arr_str = None
-		self.data_json = None
+	def __init__(self,port):
+		"""
+		Inicializa el puerto serial y otras variables
+		"""
+		self.ser = serial.Serial(port=port, baudrate=38400)
+		self.data_dict = None
 		self.data_ready = False
 
-	# Configurar sonda para adquisicion en tiempo real
 	def config(self):
+		""" Configura sonda para adquisicion en tiempo real """
 		print('Iniciando sonda ...')
 		self.ser.write('a'.encode()) # Cualquier tecla para empezar comunicacion
 		self.ser.read_until(Sonda.input_bytes)
@@ -30,56 +24,51 @@ class Sonda:
 		self.ser.write('a'.encode()) # Cualquier tecla para empezar
 		print('Sonda lista para enviar datos!')
 	
-	# Empieza el thread de adquisición
 	def start(self):
-		self.ser.timeout = 10
+		""" Empieza el thread de adquisición """
+		self.ser.timeout = 1
 		self.running = True
 		self.ser.write('a'.encode())	# Cualquier tecla para empezar comunicacion
-		tSonda = threading.Thread(target=self.update)
-		tSonda.daemon = True
-		tSonda.start()
+		self.t = threading.Thread(target=self.update)
+		self.t.start()
 		# Espera a que esté listo el primer dato 
 		while not self.data_ready:
 			pass
 	
-	# Actualiza datos adquiridos
 	def update(self):
+		""" Actualiza datos adquiridos """
+		self.ser.reset_input_buffer()
+		self.ser.read_until()
 		while self.running:
-			self.ser.reset_input_buffer()
-			self.ser.read_until()
 			raw = self.ser.read_until() # Waits until new line
 			data = raw.decode()
 
 			# Descarta lineas inutiles
 			if len(data)<3:
-				continue
+				continue	# linea con solo espacios
 			if ord(data[-3]) > ord('9'):
-				continue	# si no es una cifra
-			self.data_arr_str = data.split()
+				continue	# linea sin cifra al final
+			data_arr = data.split()
 			
-			# Convierte a json
-			data_arr = []
-			for j in range(8):
-				if j!= 7:
-					data_arr.append(float(self.data_arr_str[j]))
-				else:
-					data_arr.append(self.data_arr_str[7])
-			data_dict = dict(zip(Sonda.keys,data_arr))
-			self.data_json = json.dumps(data_dict)
+			# Convierte a dict
+			for j in range(7):
+				data_arr[j] = float(data_arr[j])
+			self.data_dict = dict(zip(Sonda.keys,data_arr))
 			
 			self.data_ready = True
 
-	# Para el thread de adquisición
 	def stop(self):
+		""" Detiene el thread de adquisición """
 		self.running = False
+		self.t.join()
 
-	# Apagar sonda
 	def shutdown(self):
+		""" Apaga la sonda """
 		print('Apagando sonda ...')
 		self.ser.write(chr(27).encode())
 		self.ser.read_until(Sonda.input_bytes)
-		self.ser.write('0'.encode())
+		self.ser.write(chr(27).encode())
 		self.ser.read_until(Sonda.input_bytes)
-		self.ser.write('0'.encode())
+		self.ser.write(chr(27).encode())
 		print('Sonda apagada!')
 		self.ser.close()

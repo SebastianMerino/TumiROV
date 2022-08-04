@@ -9,12 +9,12 @@ gamepadInfo = document.getElementById("gamepad-info");
 
 // Obtiene el index del gamepad una vez que se conecta
 let gamepadIndex;
-window.addEventListener('gamepadconnected', (event) => {
+window.addEventListener('gamepadconnected', event => {
     gamepadIndex = event.gamepad.index;
     gamepadInfo.innerHTML = "Gamepad conectado"
 });
 
-window.addEventListener('gamepaddisconnected', (event) => {
+window.addEventListener('gamepaddisconnected', event => {
     gamepadInfo.innerHTML = "Esperando al Gamepad. Presione cualquier botón para comenzar."
 });
 
@@ -31,32 +31,21 @@ setInterval(() => {
 var rpm = 0
 function gameLoop(gp) {
     if (gp.buttons[1].pressed) {
-        rpm+=10;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_reset", true);
-        request.send();
+        url = "/prop_reset";
     } else if (gp.buttons[0].pressed) {
-        rpm-=10;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_desacelerar", true);
-        request.send();
+        url = "/prop_desacelerar"
     } else if (gp.buttons[3].pressed) {
-        rpm = 0;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_acelerar", true);
-        request.send();
+        url = "/prop_acelerar";
+    } else if (gp.buttons[12].pressed) {
+        url = "/prop_subir";
+    } else if (gp.buttons[13].pressed) {
+        url = "/prop_bajar";
     }
-    else if (gp.buttons[12].pressed) {
-        rpm = 5000;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_subir", true);
-        request.send();
-    }
-    else if (gp.buttons[13].pressed) {
-        rpm = -5000;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_bajar", true);
-        request.send();
-    }
-    document.getElementById("prop").innerHTML = rpm
+    else { return; } // No se presionó ningún botón
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(infoProp => {
+            document.getElementById("prop").innerHTML = infoProp.RPM
+        });
 }
