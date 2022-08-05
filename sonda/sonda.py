@@ -37,10 +37,13 @@ class Sonda:
 	
 	def update(self):
 		""" Actualiza datos adquiridos """
+		# Anteriormente hubo errores de modo que cada vez que se vuelve
+		# al thread la línea está a la mitad. Se soluciona al resetear 
+		# el buffer y leer hasta el cambio de línea dentro del loop.
 		self.ser.reset_input_buffer()
 		self.ser.read_until()
 		while self.running:
-			raw = self.ser.read_until() # Waits until new line
+			raw = self.ser.read_until() # Lee línea
 			data = raw.decode()
 
 			# Descarta lineas inutiles
@@ -50,11 +53,10 @@ class Sonda:
 				continue	# linea sin cifra al final
 			data_arr = data.split()
 			
-			# Convierte a dict
+			# Convierte a diccionario
 			for j in range(7):
 				data_arr[j] = float(data_arr[j])
 			self.data_dict = dict(zip(Sonda.keys,data_arr))
-			
 			self.data_ready = True
 
 	def stop(self):

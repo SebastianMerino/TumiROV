@@ -1,7 +1,9 @@
 from sonda import Sonda
+from puertosUSB import buscar_puerto
 import time
 
-idronaut = Sonda('COM5')
+hwid = '0403:6001'
+idronaut = Sonda(buscar_puerto(hwid))
 idronaut.config()
 idronaut.start()
 

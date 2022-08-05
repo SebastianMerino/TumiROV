@@ -30,22 +30,50 @@ setInterval(() => {
 // Actualiza la velocidad segun el boton presionado
 var rpm = 0
 function gameLoop(gp) {
-    if (gp.buttons[1].pressed) {
-        url = "/prop_reset";
-    } else if (gp.buttons[0].pressed) {
-        url = "/prop_desacelerar"
-    } else if (gp.buttons[3].pressed) {
-        url = "/prop_acelerar";
-    } else if (gp.buttons[12].pressed) {
-        url = "/prop_subir";
-    } else if (gp.buttons[13].pressed) {
-        url = "/prop_bajar";
-    }
-    else { return; } // No se presionó ningún botón
-    
-    fetch(url)
+    fetch('/gamepad', {
+        "method": "POST",
+        "headers": {"Content-Type": "application/json"},
+        "body": JSON.stringify({
+            axes: {
+                LH: gp.axes[0],
+                LV: -gp.axes[1],
+                RH: gp.axes[2],
+                RV: -gp.axes[3],
+            },
+            buttons: {
+                A: gp.buttons[0].pressed,
+                B: gp.buttons[1].pressed,
+                X: gp.buttons[2].pressed,
+                Y: gp.buttons[3].pressed,
+                U: gp.buttons[12].pressed,
+                D: gp.buttons[13].pressed,
+                L: gp.buttons[14].pressed,
+                R: gp.buttons[15].pressed,
+            }
+        }),
+    });
+
+    fetch('/prop_verticales')
         .then(response => response.json())
         .then(infoProp => {
-            document.getElementById("prop").innerHTML = infoProp.RPM
+            document.getElementById("prop").innerHTML = infoProp.rpm
         });
+
+    // if (gp.buttons[1].pressed) {
+    //     url = "/gamepad_B";
+    // } else if (gp.buttons[0].pressed) {
+    //     url = "/gamepad_A"
+    // } else if (gp.buttons[3].pressed) {
+    //     url = "/gamepad_Y";
+    // } else if (gp.buttons[12].pressed) {
+    //     url = "/gamepad_U";
+    // } else if (gp.buttons[13].pressed) {
+    //     url = "/gamepad_D";
+    // }
+    // else { return; } // No se presionó ningún botón
+    // fetch(url)
+    // .then(response => response.json())
+    // .then(infoProp => {
+    //     document.getElementById("prop").innerHTML = infoProp.rpm
+    // });
 }
