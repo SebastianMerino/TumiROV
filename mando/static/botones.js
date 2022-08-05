@@ -27,8 +27,7 @@ setInterval(() => {
     }
 }, 100)
 
-// Actualiza la velocidad segun el boton presionado
-var rpm = 0
+// Actualiza la informacion del mando y velocidad mostrada
 function gameLoop(gp) {
     fetch('/gamepad', {
         "method": "POST",
@@ -58,22 +57,4 @@ function gameLoop(gp) {
         .then(infoProp => {
             document.getElementById("prop").innerHTML = infoProp.rpm
         });
-
-    // if (gp.buttons[1].pressed) {
-    //     url = "/gamepad_B";
-    // } else if (gp.buttons[0].pressed) {
-    //     url = "/gamepad_A"
-    // } else if (gp.buttons[3].pressed) {
-    //     url = "/gamepad_Y";
-    // } else if (gp.buttons[12].pressed) {
-    //     url = "/gamepad_U";
-    // } else if (gp.buttons[13].pressed) {
-    //     url = "/gamepad_D";
-    // }
-    // else { return; } // No se presionó ningún botón
-    // fetch(url)
-    // .then(response => response.json())
-    // .then(infoProp => {
-    //     document.getElementById("prop").innerHTML = infoProp.rpm
-    // });
 }
