@@ -15,38 +15,19 @@ def ROV():
 
 @app.route("/navegacion")
 def navegacion():
-    return render_template("navegacion.html")
+	return render_template("navegacion.html")
 
 @app.route('/prop_verticales')
 def prop_verticales():
-    return jsonify({'rpm':prop.rpm})
+	return jsonify({'rpm':prop.rpm})
 
-# @app.route('/gamepad_<cmd>')
-# def command(cmd=None):
-#     """ Manda un comando segun el boton que se presione 
-#     Leyenda flechas -> Left, Right, Up, Down
-#     """
-#     rpm_actual = prop.rpm
-#     if cmd == "B":
-#         rpm_actual = 0
-#     elif cmd == "Y":
-#         rpm_actual += 100
-#         if rpm_actual >= 5000: rpm_actual = 5000
-#     elif cmd == "A":
-#         rpm_actual -= 100
-#         if rpm_actual <= -5000: rpm_actual = -5000
-#     elif cmd == "U":
-#         rpm_actual = 1000
-#     elif cmd == "D":
-#         rpm_actual = -1000
-#     prop.set_speed_ROV(rpm_actual)
-#     return jsonify({'rpm':rpm_actual})
-
-@app.route('/gamepad', methods=['POST','GET'])
+@app.post('/gamepad')
 def gamepad():
-    axes = request.json['axes']
-    prop.set_vel_vertical(axes['RV'])
-    return jsonify(axes)
+	""" Esta función se llama cada vez que se actualiza info
+	del gamepad """
+	gp = request.json
+	prop.set_vel_vertical(gp['axes']['RV'])
+	return jsonify(gp)
 
 if __name__ == '__main__':
 	ip = "127.0.0.1"

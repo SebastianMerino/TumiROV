@@ -5,9 +5,7 @@ class Sonda:
 	keys = ['press','temp','cond','sal','O2sat','O2ppm','pH','time']
 
 	def __init__(self,port):
-		"""
-		Inicializa el puerto serial y otras variables
-		"""
+		"""	Inicializa el puerto serial y otras variables """
 		self.ser = serial.Serial(port=port, baudrate=38400)
 		self.data_dict = None
 		self.data_ready = False
