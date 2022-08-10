@@ -1,5 +1,6 @@
+from math import sin
 from flask import Flask, render_template, jsonify
-from sonda import Sonda
+from sonda import Sonda, calc_profundidad
 from puertosUSB import buscar_puerto
 
 hwid = '0403:6001'
@@ -15,8 +16,7 @@ def ROV():
 def datos_sonda():
     dict = idronaut.data_dict
     p = dict['press']
-    g,c1,c2,c3,c4 = 9.78255, 9.72659, -2.2512E-5, 2.279E-10, -1.82E-15
-    dict['depth'] = (c1*p + c2*p**2 + c3*p**3 + c4*p**4)/(g + 1.092E-6*p)
+    dict['depth'] = calc_profundidad(p,lat=12.5)
     return jsonify(dict)
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify, request
 from propulsores import Propulsores
 import logging
 
-prop = Propulsores('/dev/ttyUSB0')
+props = Propulsores('/dev/ttyUSB0')
 
 # Empezar app de Flask sin log
 app = Flask(__name__)
@@ -19,14 +19,18 @@ def navegacion():
 
 @app.route('/prop_verticales')
 def prop_verticales():
-	return jsonify({'rpm':prop.rpm})
+	return jsonify({'rpm':props.prop61.rpm})
 
 @app.post('/gamepad')
 def gamepad():
 	""" Esta función se llama cada vez que se actualiza info
 	del gamepad """
 	gp = request.json
-	prop.set_vel_vertical(gp['axes']['RV'])
+	RVax = gp['axes']['RV']
+	if RVax > 0.05 or RVax < -0.05: 
+		props.set_vel_vertical(RVax)
+	else:
+		props.set_vel_vertical(0)
 	return jsonify(gp)
 
 if __name__ == '__main__':
@@ -35,3 +39,4 @@ if __name__ == '__main__':
 
 	# start the flask app
 	app.run(host=ip, port=p, debug=False, threaded=True, use_reloader=False)
+	props.close()
