@@ -19,7 +19,8 @@ def navegacion():
 
 @app.route('/prop_verticales')
 def prop_verticales():
-	return jsonify({'rpm':props.prop61.rpm})
+	return jsonify({'vel_izq':props.propIzq.vel,
+		'vel_der':props.propDer.vel})
 
 @app.post('/gamepad')
 def gamepad():
@@ -27,7 +28,7 @@ def gamepad():
 	del gamepad """
 	gp = request.json
 	RVax = gp['axes']['RV']
-	if RVax > 0.05 or RVax < -0.05: 
+	if RVax > 0.1 or RVax < -0.1: 
 		props.set_vel_vertical(RVax)
 	else:
 		props.set_vel_vertical(0)

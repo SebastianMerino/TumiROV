@@ -5,8 +5,7 @@ from puertosUSB import buscar_puerto
 import cv2
 
 # Iniciar sonda
-sonda_id = "1234:5678"
-idronaut = Sonda(buscar_puerto(sonda_id))
+idronaut = Sonda(buscar_puerto("AR0K3WI2A"))
 idronaut.config()
 
 # Iniciar camaras
@@ -39,8 +38,7 @@ def ROV():
 
 @app.route("/datos_sonda")
 def datos_sonda():
-    # return idronaut.data_json
-    return None
+    return idronaut.data_json
 
 @app.route("/cam1")
 def video_feed1():
@@ -57,7 +55,6 @@ def video_feed2():
 @app.route("/navegacion")
 def navegacion():
     return render_template("navegacion.html")
-
 
 
 if __name__ == '__main__':

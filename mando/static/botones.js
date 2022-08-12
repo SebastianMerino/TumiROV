@@ -18,14 +18,14 @@ window.addEventListener('gamepaddisconnected', event => {
     gamepadInfo.innerHTML = "Esperando al Gamepad. Presione cualquier botón para comenzar."
 });
 
-// Escaneo de los botones cada 100 ms
+// Escaneo de los botones cada 1 ms
 setInterval(() => {
     if(gamepadIndex !== undefined) {
         // a gamepad is connected and has an index
         const myGamepad = navigator.getGamepads()[gamepadIndex];
         gameLoop(myGamepad)
     }
-}, 100)
+}, 20)
 
 // Actualiza la informacion del mando y velocidad mostrada
 function gameLoop(gp) {
@@ -51,10 +51,4 @@ function gameLoop(gp) {
             }
         }),
     });
-
-    fetch('/prop_verticales')
-        .then(response => response.json())
-        .then(infoProp => {
-            document.getElementById("prop").innerHTML = infoProp.rpm
-        });
 }
