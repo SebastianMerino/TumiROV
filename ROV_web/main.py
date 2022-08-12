@@ -76,8 +76,7 @@ def prop_verticales():
 
 @app.post('/gamepad')
 def gamepad():
-	""" Esta función se llama cada vez que se actualiza info
-	del gamepad """
+	""" Se ejecuta cada vez que se postea info del gamepad """
 	gp = request.json
 	RVax = gp['axes']['RV']
 	if RVax > 0.1 or RVax < -0.1: 
