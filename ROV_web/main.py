@@ -1,10 +1,10 @@
-from flask import Flask, render_template, Response, jsonify, request
+from flask import Flask, Response, render_template, jsonify, request
 from sonda import Sonda, calc_profundidad
 from videostream import VideoStream
-from puertosUSB import buscar_puerto
 from propulsores import Propulsores
-import logging
+from puertosUSB import buscar_puerto
 import cv2
+import logging
 
 # ------------------------- SENSORES -------------------------------
 # Iniciar propulsores
