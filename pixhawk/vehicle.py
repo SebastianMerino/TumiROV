@@ -46,34 +46,11 @@ class Vehicle:
 		# raise Exception("No se pudo iniciar el motor")
 		print("No se pudo armar los motores, intentando nuevamente...")
 		self.arm()
-
-	def set_rc_channel_pwm(self,channel_id, pwm=1500):
-		""" 
-		Escribe comandos en los canales RC para manejar los motores
-		principales. Se tiene que enviar constantemente
-		Yaw: 4, Forward: 5, Lateral: 6
-		http://www.ardusub.com/developers/rc-input-and-output.html
-		args:
-			channel_id (TYPE): Channel ID.
-			pwm (int): Channel pwm value 1100-1900
-		"""
-		if channel_id < 1 or channel_id > 18:
-			print("Channel does not exist.")
-			return
-
-		rc_channel_values = [65535 for _ in range(18)]
-		rc_channel_values[channel_id - 1] = pwm
-		self.master.mav.rc_channels_override_send(
-			self.master.target_system,                # target_system
-			self.master.target_component,             # target_component
-			*rc_channel_values)                  # RC channel list, in microseconds.
 	
 	def disarm(self):
 		"""
 		Envía el comando para deshabilitar los motores y espera
 		a que estén deshabilitados.
-		args:
-			timeout: Tiempo máximo de espera.
 		"""
 		# Apaga todos los motores (PWM 0)
 		for i in range(8):
@@ -95,10 +72,40 @@ class Vehicle:
 		Sets 'servo_n' output PWM pulse-width.
 			servo_n: PWM port to set from FMU PWM (1-8)
 			us: PWM pulse-width in microseconds. Between 1100 and 1900
-			(period from 0 to 20000).
 		"""
 		self.master.set_servo(servo_n+8, us)
 
+	def set_motor(self,n,vel):
+		"""
+		Coloca uno de los 4 motores a una velocidad (normalizada de -1 a 1)
+		"""
+		if vel>0:
+			pwm = vel*800 + 1100
+			self.set_servo_pwm(n+4,1100)
+			self.set_servo_pwm(n,pwm)
+		else:
+			pwm = (-vel)*800 + 1100
+			self.set_servo_pwm(n+4,1900)
+			self.set_servo_pwm(n,pwm)
+
+	def avanzar(self,vel):
+		self.set_motor(1,vel)
+		self.set_motor(2,vel)
+		self.set_motor(3,vel)
+		self.set_motor(4,vel)
+
+	def lateral(self,vel):
+		self.set_motor(1,vel)
+		self.set_motor(2,vel)
+		self.set_motor(3,vel)
+		self.set_motor(4,vel)
+
+	def girar(self,vel):
+		self.set_motor(1,vel)
+		self.set_motor(2,vel)
+		self.set_motor(3,vel)
+		self.set_motor(4,vel)
+	
 	def request_message(self, message_id: int):
 		"""
 		Solicita el envío de un solo mensaje.
