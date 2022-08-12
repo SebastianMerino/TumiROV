@@ -57,7 +57,7 @@ function gameLoop(gp) {
         request.send();
     }
     if (rpm > 5000) { rpm = 5000 }
-    if (rpm < 5000) { rpm = -5000 }
+    if (rpm < -5000) { rpm = -5000 }
     document.getElementById("prop").innerHTML = rpm
 }
 
