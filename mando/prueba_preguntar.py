@@ -1,14 +1,13 @@
 import serial
 
-puerto = input('Puerto o path USB?: ')
-ser = serial.Serial(port = puerto, baudrate=115200, timeout=5)
+puerto = 'COM8'
+ser = serial.Serial(port = puerto, baudrate=115200, timeout=3)
 
-print('Intentando pedir velocidad...')
-packet = 0x6150000097
-ser.write(packet.to_bytes(5,'big'))
 while True:
-	data = ser.recv(1)
-	print(data)
+	packet = int(input('Hex input: '),16)
+	ser.write(packet.to_bytes(5,'big'))
+	data = ser.read(5)
+	print(hex(int.from_bytes(data,'big')))
 
 # data = ser.recv(5)
 # num = int.from_bytes(data,"big")

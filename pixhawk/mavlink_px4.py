@@ -1,7 +1,8 @@
 from vehicle import Vehicle
-import time
+from puertosUSB import buscar_puerto
 
-PX4 = Vehicle("COM4")
+puerto = buscar_puerto('MAVLink')
+PX4 = Vehicle(puerto)
 
 PX4.arm()
 try:
