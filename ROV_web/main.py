@@ -6,21 +6,22 @@ from propulsores import Propulsores
 import logging
 import cv2
 
+# ------------------------- SENSORES -------------------------------
+# Iniciar propulsores
+props = Propulsores(buscar_puerto("AR0K003IA"))
+
 # Iniciar sonda
 idronaut = Sonda(buscar_puerto("AR0K3WI2A"))
 idronaut.config()
-
-# Iniciar propulsores
-props = Propulsores(buscar_puerto("AR0K003IA"))
+idronaut.start()
 
 # Iniciar camaras
 fuente1 = "rtsp://192.168.226.201:554"
 fuente2 = "rtsp://192.168.226.203:554"
 vs1 = VideoStream(fuente1).start()
 vs2 = VideoStream(fuente2).start()
-
-# Frame generator for video
 def generate(vs):
+    """ Objeto generador de frames codificados """
     while True:
         (grabbed, frame) = vs.read()
         if not grabbed:
@@ -34,7 +35,9 @@ def generate(vs):
         # yield the output frame in the byte format
         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
             bytearray(encodedImage) + b'\r\n')
+# -----------------------------------------------------------------
 
+# ---------------------- PÁGINA WEB -------------------------------
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -82,16 +85,19 @@ def gamepad():
 	else:
 		props.set_vel_vertical(0)
 	return jsonify(gp)
+# ----------------------------------------------------------------------------
 
+# --------------------------------- MAIN -------------------------------------
 if __name__ == '__main__':
-    ip = "0.0.0.0"	# Poner 0.0.0.0 para que este abierto a cualquier direccion
+    ip = "0.0.0.0"      # Para que este disponible desde cualquier IP en la red
     p = 8000			# Puerto
 
-    # start the flask app
+    # Correr la app hasta el ctrl+C
     app.run(host=ip, port=p, debug=False, threaded=True, use_reloader=False)
     
+    # Apagar todo
     vs1.stop()
     vs2.stop()
-    
     idronaut.stop()
     idronaut.shutdown()
+    props.close()
