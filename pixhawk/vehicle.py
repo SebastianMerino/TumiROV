@@ -15,6 +15,7 @@ class Vehicle:
 		self.master = mavutil.mavlink_connection(port, baud=115200)
 		self.attitude = []
 		self.velocity = []
+		self.motors_vel = [0,0,0,0]
 		self.time_boot = 0
 		self.receiving = True
 
@@ -87,6 +88,7 @@ class Vehicle:
 			pwm = (-vel)*800 + 1100
 			self.set_servo_pwm(n+4,1900)
 			self.set_servo_pwm(n,pwm)
+		self.motors_vel[n-1] = vel
 
 	def avanzar(self,vel):
 		self.set_motor(1,vel)
