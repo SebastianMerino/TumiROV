@@ -9,12 +9,12 @@ gamepadInfo = document.getElementById("gamepad-info");
 
 // Obtiene el index del gamepad una vez que se conecta
 let gamepadIndex;
-window.addEventListener('gamepadconnected', (event) => {
+window.addEventListener('gamepadconnected', event => {
     gamepadIndex = event.gamepad.index;
     gamepadInfo.innerHTML = "Gamepad conectado"
 });
 
-window.addEventListener('gamepaddisconnected', (event) => {
+window.addEventListener('gamepaddisconnected', event => {
     gamepadInfo.innerHTML = "Esperando al Gamepad. Presione cualquier botón para comenzar."
 });
 
@@ -27,61 +27,34 @@ setInterval(() => {
     }
 }, 100)
 
-// Actualiza la velocidad segun el boton presionado
-var rpm = 0
+// Actualiza la informacion del mando y velocidad mostrada
 function gameLoop(gp) {
-    if (gp.buttons[1].pressed) {
-        rpm = 0;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_reset", true);
-        request.send();
-    } else if (gp.buttons[0].pressed) {
-        rpm -= 10;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_desacelerar", true);
-        request.send();
-    } else if (gp.buttons[3].pressed) {
-        rpm += 10;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_acelerar", true);
-        request.send();
-    } else if (gp.buttons[12].pressed) {
-        rpm += 500;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_subir", true);
-        request.send();
-    } else if (gp.buttons[13].pressed) {
-        rpm -= 500;
-        var request = new XMLHttpRequest();
-        request.open("GET", "/prop_bajar", true);
-        request.send();
-    }
-    if (rpm > 5000) { rpm = 5000 }
-    if (rpm < -5000) { rpm = -5000 }
-    document.getElementById("prop").innerHTML = rpm
+    fetch('/gamepad', {
+        "method": "POST",
+        "headers": {"Content-Type": "application/json"},
+        "body": JSON.stringify({
+            axes: {
+                LH: gp.axes[0],
+                LV: -gp.axes[1],
+                RH: gp.axes[2],
+                RV: -gp.axes[3],
+            },
+            buttons: {
+                A: gp.buttons[0].pressed,
+                B: gp.buttons[1].pressed,
+                X: gp.buttons[2].pressed,
+                Y: gp.buttons[3].pressed,
+                U: gp.buttons[12].pressed,
+                D: gp.buttons[13].pressed,
+                L: gp.buttons[14].pressed,
+                R: gp.buttons[15].pressed,
+            }
+        }),
+    });
+
+    fetch('/prop_verticales')
+        .then(response => response.json())
+        .then(infoProp => {
+            document.getElementById("prop").innerHTML = infoProp.rpm
+        });
 }
-
-
-
-// obtener json de url
-async function get() {
-    let url = '/datos_sonda'
-    let obj = await (await fetch(url)).json();  
-    return obj;
-    }
-
-// funcion para actualizar tabla
-var datos, p, z;
-const g = 9.78255, c1 = 9.72659, c2 = -2.2512E-5, c3 = 2.279E-10, c4 = -1.82E-15; 
-const actualizar = function () {
-(async () => {
-    datos = await get()
-    p = datos.press
-    z = (c1*p + c2*p**2 + c3*p**3 + c4*p**4)/(g + 1.092E-6*p)
-    document.getElementById("time").innerHTML = datos.time;
-    document.getElementById("depth").innerHTML = z.toFixed(1);
-})()
-}
-
-// realiza una accion cada 50 ms
-var intervalID = window.setInterval(actualizar,50)
