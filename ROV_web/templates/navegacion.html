@@ -29,23 +29,45 @@
 
     <img src="/cam1">
     <hr>
+    <h1>Datos del ROV</h1>
     <table class="center">
       <tr>
         <th>Profundidad [m]</th>
-        <th>Velocidad de los propulsores [RPM]</th>
-        <!-- <th>Velocidad [m/s]</th>
+        <th>Velocidad en x[m/s]</th>
+        <th>Velocidad en z[m/s]</th>
         <th>Orientación </th>
-        <th>Tiempo de operación [s] </th> -->
+        <th>Tiempo de operación [s] </th>
       </tr>
       <tr>
-        <td id="depth">-0.2</td>
-        <td id="prop">0</td>
-        <!-- <td id="speed">0</td>
-        <td id="yaw">31.25°</td>
-        <td id="time">06:02:34.26</td> -->
+        <td id="depth">0</td>
+        <td id="speedx">0</td>
+        <td id="speedz">0</td>
+        <td id="yaw">0</td>
+        <td id="time">0</td>
+      </tr>
+    </table>
+
+    <h1>Velocidad de propulsores (normalizada)</h1>
+    <table class="center">
+      <tr>
+        <th>Propulsor 1</th>
+        <th>Propulsor 2</th>
+        <th>Propulsor 3</th>
+        <th>Propulsor 4</th>
+        <th>Propulsor 5</th>
+        <th>Propulsor 6</th>
+      </tr>
+      <tr>
+        <td id="prop1">0</td>
+        <td id="prop2">0</td>
+        <td id="prop3">0</td>
+        <td id="prop4">0</td>
+        <td id="prop5">0</td>
+        <td id="prop6">0</td>
       </tr>
     </table>
     <script src="{{url_for('static', filename='botones.js')}}"></script>
+    <script src="{{url_for('static', filename='tabla.js')}}"></script>
 
   </body>
   

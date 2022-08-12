@@ -1,3 +1,7 @@
+"""
+Módulo para manejar la recepción de datos de la sonda
+Ocean Seven 310 de Idronaut.
+"""
 import serial, threading
 from math import pi, sin
 

@@ -1,12 +1,17 @@
-from flask import Flask, render_template, Response
-from sonda import Sonda, depth_calc
+from flask import Flask, render_template, Response, jsonify, request
+from sonda import Sonda, calc_profundidad
 from videostream import VideoStream
 from puertosUSB import buscar_puerto
+from propulsores import Propulsores
+import logging
 import cv2
 
 # Iniciar sonda
 idronaut = Sonda(buscar_puerto("AR0K3WI2A"))
 idronaut.config()
+
+# Iniciar propulsores
+props = Propulsores(buscar_puerto("AR0K003IA"))
 
 # Iniciar camaras
 fuente1 = "rtsp://192.168.226.201:554"
@@ -31,6 +36,8 @@ def generate(vs):
             bytearray(encodedImage) + b'\r\n')
 
 app = Flask(__name__)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 @app.route("/")
 def ROV():
@@ -38,7 +45,10 @@ def ROV():
 
 @app.route("/datos_sonda")
 def datos_sonda():
-    return idronaut.data_json
+    dict = idronaut.data_dict
+    p = dict['press']
+    dict['depth'] = calc_profundidad(p,lat=12.5)
+    return jsonify(dict)
 
 @app.route("/cam1")
 def video_feed1():
@@ -56,6 +66,22 @@ def video_feed2():
 def navegacion():
     return render_template("navegacion.html")
 
+@app.route('/prop_verticales')
+def prop_verticales():
+	return jsonify({'vel_izq':props.propIzq.vel,
+		'vel_der':props.propDer.vel})
+
+@app.post('/gamepad')
+def gamepad():
+	""" Esta función se llama cada vez que se actualiza info
+	del gamepad """
+	gp = request.json
+	RVax = gp['axes']['RV']
+	if RVax > 0.1 or RVax < -0.1: 
+		props.set_vel_vertical(RVax)
+	else:
+		props.set_vel_vertical(0)
+	return jsonify(gp)
 
 if __name__ == '__main__':
     ip = "0.0.0.0"	# Poner 0.0.0.0 para que este abierto a cualquier direccion
