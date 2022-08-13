@@ -29,7 +29,6 @@ def generate(vs):
         frame = cv2.resize(frame,(352,286))
         # encode the frame in JPEG format
         (flag, encodedImage) = cv2.imencode(".jpg", frame)
-        # ensure the frame was successfully encoded
         if not flag:
             continue
         # yield the output frame in the byte format
@@ -50,18 +49,18 @@ def ROV():
 def datos_sonda():
     dict = idronaut.data_dict
     p = dict['press']
-    dict['depth'] = calc_profundidad(p,lat=12.5)
+    lat = 12.5      # Latitud en Pucusana
+    dict['depth'] = calc_profundidad(p,lat)
     return jsonify(dict)
 
+# Para las cámaras se devuelve las respuestas con el media type
 @app.route("/cam1")
 def video_feed1():
-    # return the response with the specific media type (mime type)
     return Response(generate(vs1),
         mimetype = "multipart/x-mixed-replace; boundary=frame")
 
 @app.route("/cam2")
 def video_feed2():
-    # return the response with the specific media type (mime type)
     return Response(generate(vs2),
         mimetype = "multipart/x-mixed-replace; boundary=frame")
 
