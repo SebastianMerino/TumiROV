@@ -18,6 +18,7 @@ class Vehicle:
 		self.motors_vel = [0,0,0,0]
 		self.time_boot = 0
 		self.receiving = True
+		self.MAX_PWM = 1700
 
 	def arm(self,timeout=5):
 		"""
@@ -80,12 +81,13 @@ class Vehicle:
 		"""
 		Coloca uno de los 4 motores a una velocidad (normalizada de -1 a 1)
 		"""
-		if vel>0:
-			pwm = vel*800 + 1100
+		rango = self.MAX_PWM - 1100
+		if vel>=0:
+			pwm = vel*rango + 1100
 			self.set_servo_pwm(n+4,1100)
 			self.set_servo_pwm(n,pwm)
 		else:
-			pwm = (-vel)*800 + 1100
+			pwm = (-vel)*rango + 1100
 			self.set_servo_pwm(n+4,1900)
 			self.set_servo_pwm(n,pwm)
 		self.motors_vel[n-1] = vel

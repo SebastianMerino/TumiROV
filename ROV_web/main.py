@@ -18,8 +18,7 @@ idronaut.config()
 idronaut.start()
 
 # Pixhawk
-puerto = buscar_puerto('MAVLink')
-PX4 = Vehicle(puerto)
+PX4 = Vehicle(buscar_puerto('MAVLink'))
 PX4.arm()
 PX4.start_data_rx()
 
@@ -112,14 +111,14 @@ def gamepad():
 		PX4.girar(RHax)
 	else:
 		PX4.girar(0)
-	LVax = gp['axes']['LV']
 
+	LVax = gp['axes']['LV']
 	if LVax > 0.1 or LVax < -0.1: 
 		PX4.avanzar(LVax)
 	else:
 		PX4.avanzar(0)
-	LHax = gp['axes']['LH']
 
+	LHax = gp['axes']['LH']
 	if LHax > 0.1 or LHax < -0.1: 
 		PX4.lateral(LHax)
 	else:
