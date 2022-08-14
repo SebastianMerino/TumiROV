@@ -124,7 +124,6 @@ def gamepad():
 	else:
 		PX4.lateral(0)
 		
-	
 	#Luces
 	if gp['buttons']['R1'] and not presionado:
 		presionado = True
