@@ -1,13 +1,13 @@
 // funcion para actualizar tabla
 const actualizar = function () {
-    // fetch('/datos_PX4')
-    // .then(response => response.json())
-    // .then(datos_PX4 => {
-    //     orient = datos_PX4.attitude.yaw*180/3.141592
-    //     document.getElementById("yaw").innerHTML = orient.toFixed(1);
-    //     document.getElementById("speed").innerHTML = datos_PX4.velocity.vz;
-    //     document.getElementById("time").innerHTML = datos_PX4.time_boot;
-    // });
+    fetch('/datos_PX4')
+    .then(response => response.json())
+    .then(datos_PX4 => {
+        orient = datos_PX4.attitude.yaw*180/3.141592
+        document.getElementById("yaw").innerHTML = orient.toFixed(1);
+        document.getElementById("speed").innerHTML = datos_PX4.velocity.vz;
+        document.getElementById("time").innerHTML = datos_PX4.time_boot;
+    });
 
     fetch('/prop_verticales')
     .then(response => response.json())
