@@ -87,7 +87,7 @@ def prop_verticales():
 def datos_px4():
 	att_dict = dict(zip(['roll','pitch','yaw'],PX4.attitude))
 	v_dict = dict(zip(['vx','vy','vz'],PX4.velocity))
-	datos_dict = {'attitude':att_dict, 'velocity':v_dict,
+	datos_dict = {'attitude':att_dict, 'velocity':v_dict, 'vel_mod':PX4.vel_mod,
 		'time_boot':PX4.time_boot, 'motors': PX4.motors_vel}
 	return jsonify(datos_dict)
 
@@ -123,11 +123,10 @@ def gamepad():
 		PX4.lateral(LHax)
 	else:
 		PX4.lateral(0)
-		
+	
 	#Luces
 	if gp['buttons']['R1'] and not presionado:
 		presionado = True
-		luces.switch()
 	if not gp['buttons']['R1']:
 		presionado = False
 

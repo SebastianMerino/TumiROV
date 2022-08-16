@@ -15,6 +15,7 @@ class Vehicle:
 		self.master = mavutil.mavlink_connection(port, baud=115200)
 		self.attitude = []
 		self.velocity = []
+		self.vel_mod = 0
 		self.motors_vel = [0,0,0,0]
 		self.time_boot = 0
 		self.receiving = True
@@ -155,7 +156,11 @@ class Vehicle:
 				self.time_boot = att_dict['time_boot_ms']/1000
 			if msg_gp is not None:
 				global_pos = msg_gp.to_dict()
-				self.velocity = [global_pos['vx']/100, global_pos['vy']/100, global_pos['vz']/100]
+				vN = global_pos['vx']/100
+				vE = global_pos['vy']/100
+				vD = global_pos['vz']/100
+				self.velocity = [vN,vE,vD]
+				self.vel_mod = (vN**2+vE**2+vD**2)**.5
 
 	def start_data_rx(self):
 		""" Inicia el thread de adquisición de datos. """
