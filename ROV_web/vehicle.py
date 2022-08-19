@@ -20,6 +20,7 @@ class Vehicle:
 		self.time_boot = 0
 		self.receiving = True
 		self.MAX_PWM = 1700
+		self.master.wait_heartbeat()
 
 	def arm(self,timeout=5):
 		"""
@@ -27,7 +28,6 @@ class Vehicle:
 		args:
 			timeout: Tiempo máximo de espera.
 		"""
-		self.master.wait_heartbeat()
 		self.master.mav.command_long_send(
 		self.master.target_system, self.master.target_component,
 		mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0,
@@ -36,19 +36,19 @@ class Vehicle:
 		# wait until arming confirmed
 		print("Armando motores...")
 		start_time = time.time()
-		while time.time()-start_time < timeout:
+		while time.time()-start_time < timeout or not self.master.motors_armed():
 			self.master.wait_heartbeat()
-			if self.master.motors_armed():
-				print('Motores listos!')
-				return
+		if self.master.motors_armed():
+			print('Motores listos!')
+		else:
+			print("No se pudo armar los motores, intentando nuevamente...")
+			self.arm()
+			# raise Exception("No se pudo iniciar el motor")
+			# NOTA: A veces los motores no se pueden iniciar por alguna razon
+			#       que desconozco. Sin embargo, al segundo intento, funciona.
 		
-		# NOTA: A veces los motores no se pueden iniciar por alguna razon
-		#       que desconozco. Sin embargo, al segundo intento, funciona.
-		#       Por ello, en vez de enviar error, vuelvo a llamar a la
-		#       función.
-		# raise Exception("No se pudo iniciar el motor")
-		print("No se pudo armar los motores, intentando nuevamente...")
-		self.arm()
+		for i in range(8):
+			self.set_servo_pwm(i+1,0)
 	
 	def disarm(self):
 		"""
@@ -58,17 +58,6 @@ class Vehicle:
 		# Apaga todos los motores (PWM 0)
 		for i in range(8):
 			self.set_servo_pwm(i+1,0)
-
-		# Bloquea los motores
-		self.master.mav.command_long_send(
-			self.master.target_system, self.master.target_component,
-			mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0,
-			0, 0, 0, 0, 0, 0, 0)
-
-		# Espera al desarme
-		print("Desarmando motores")
-		self.master.motors_disarmed_wait()
-		print("Desarmados!")
 
 	def set_servo_pwm(self, servo_n, us):
 		"""

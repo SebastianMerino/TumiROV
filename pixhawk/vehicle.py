@@ -15,9 +15,12 @@ class Vehicle:
 		self.master = mavutil.mavlink_connection(port, baud=115200)
 		self.attitude = []
 		self.velocity = []
+		self.vel_mod = 0
 		self.motors_vel = [0,0,0,0]
 		self.time_boot = 0
 		self.receiving = True
+		self.MAX_PWM = 1700
+		self.master.wait_heartbeat()
 
 	def arm(self,timeout=5):
 		"""
@@ -25,7 +28,6 @@ class Vehicle:
 		args:
 			timeout: Tiempo máximo de espera.
 		"""
-		self.master.wait_heartbeat()
 		self.master.mav.command_long_send(
 		self.master.target_system, self.master.target_component,
 		mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0,
@@ -34,19 +36,19 @@ class Vehicle:
 		# wait until arming confirmed
 		print("Armando motores...")
 		start_time = time.time()
-		while time.time()-start_time < timeout:
+		while time.time()-start_time < timeout or not self.master.motors_armed():
 			self.master.wait_heartbeat()
-			if self.master.motors_armed():
-				print('Motores listos!')
-				return
+		if self.master.motors_armed():
+			print('Motores listos!')
+		else:
+			print("No se pudo armar los motores, intentando nuevamente...")
+			self.arm()
+			# raise Exception("No se pudo iniciar el motor")
+			# NOTA: A veces los motores no se pueden iniciar por alguna razon
+			#       que desconozco. Sin embargo, al segundo intento, funciona.
 		
-		# NOTA: A veces los motores no se pueden iniciar por alguna razon
-		#       que desconozco. Sin embargo, al segundo intento, funciona.
-		#       Por ello, en vez de enviar error, vuelvo a llamar a la
-		#       función.
-		# raise Exception("No se pudo iniciar el motor")
-		print("No se pudo armar los motores, intentando nuevamente...")
-		self.arm()
+		for i in range(8):
+			self.set_servo_pwm(i+1,0)
 	
 	def disarm(self):
 		"""
@@ -56,17 +58,6 @@ class Vehicle:
 		# Apaga todos los motores (PWM 0)
 		for i in range(8):
 			self.set_servo_pwm(i+1,0)
-
-		# Bloquea los motores
-		self.master.mav.command_long_send(
-			self.master.target_system, self.master.target_component,
-			mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0,
-			0, 0, 0, 0, 0, 0, 0)
-
-		# Espera al desarme
-		print("Desarmando motores")
-		self.master.motors_disarmed_wait()
-		print("Desarmados!")
 
 	def set_servo_pwm(self, servo_n, us):
 		"""
@@ -80,12 +71,13 @@ class Vehicle:
 		"""
 		Coloca uno de los 4 motores a una velocidad (normalizada de -1 a 1)
 		"""
-		if vel>0:
-			pwm = vel*800 + 1100
+		rango = self.MAX_PWM - 1100
+		if vel>=0:
+			pwm = vel*rango + 1100
 			self.set_servo_pwm(n+4,1100)
 			self.set_servo_pwm(n,pwm)
 		else:
-			pwm = (-vel)*800 + 1100
+			pwm = (-vel)*rango + 1100
 			self.set_servo_pwm(n+4,1900)
 			self.set_servo_pwm(n,pwm)
 		self.motors_vel[n-1] = vel
@@ -153,7 +145,11 @@ class Vehicle:
 				self.time_boot = att_dict['time_boot_ms']/1000
 			if msg_gp is not None:
 				global_pos = msg_gp.to_dict()
-				self.velocity = [global_pos['vx']/100, global_pos['vy']/100, global_pos['vz']/100]
+				vN = global_pos['vx']/100
+				vE = global_pos['vy']/100
+				vD = global_pos['vz']/100
+				self.velocity = [vN,vE,vD]
+				self.vel_mod = (vN**2+vE**2+vD**2)**.5
 
 	def start_data_rx(self):
 		""" Inicia el thread de adquisición de datos. """
