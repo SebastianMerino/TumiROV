@@ -2,23 +2,27 @@ from flask import Flask, Response, render_template, jsonify, request
 from sonda import Sonda, calc_profundidad
 from videostream import VideoStream
 from propulsores import Propulsores
-from puertosUSB import buscar_puerto
+from serial.tools.list_ports import grep
 from jetson import JetsonPin
 from vehicle import Vehicle
 import cv2
 import logging
 
 # ------------------------- SENSORES -------------------------------
+# Puertos USB
+def buscar_puerto(name):
+    return next(grep(name)).device
+
 # Propulsores
-props = Propulsores(buscar_puerto("AR0K003IA"))
+props = Propulsores(buscar_puerto("AR0K003I"))
 
 # Sonda
-idronaut = Sonda(buscar_puerto("AR0K3WI2A"))
+idronaut = Sonda(buscar_puerto("AR0K3WI2"))
 idronaut.config()
 idronaut.start()
 
 # Pixhawk
-PX4 = Vehicle(buscar_puerto('MAVLink'))
+PX4 = Vehicle(buscar_puerto('Pixhawk'))
 PX4.arm()
 PX4.start_data_rx()
 
