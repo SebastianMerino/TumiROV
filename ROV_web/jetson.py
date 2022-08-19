@@ -14,7 +14,7 @@ class JetsonPin:
         GPIO.output(self.output_pin, GPIO.HIGH)
         self.encendido = True
     def apagar(self):
-        GPIO.output(self.output_pin, GPIO.HIGH)
+        GPIO.output(self.output_pin, GPIO.LOW)
         self.encendido = False
     def switch(self):
         if self.encendido:
