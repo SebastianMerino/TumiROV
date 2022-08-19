@@ -51,14 +51,16 @@ class Sonda:
 			data = raw.decode()
 
 			# Descarta lineas inutiles
-			if len(data)<3:
+			if len(data)<10:
 				continue	# linea con solo espacios
 			if ord(data[-3]) > ord('9'):
 				continue	# linea sin cifra al final
+			print(data)
 			data_arr = data.split()
 			
 			# Convierte a diccionario
 			for j in range(7):
+				print(data_arr[j])
 				data_arr[j] = float(data_arr[j])
 			self.data_dict = dict(zip(Sonda.keys,data_arr))
 			self.data_ready = True
