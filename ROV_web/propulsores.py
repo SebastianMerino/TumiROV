@@ -6,6 +6,7 @@ class Propulsores():
         self.propIzq = Propulsor(0x61)
         self.propDer = Propulsor(0x62)
         Propulsor.ser = serial.Serial(port = port, baudrate=115200, timeout=5)
+        print('Propulsores verticales listos!')
 
     def set_vel_vertical(self,vel):
         """ Manda la velocidad normalizada, positiva hacia arriba """

@@ -50,7 +50,7 @@ def generate(vs):
 			bytearray(encodedImage) + b'\r\n')
 # -----------------------------------------------------------------
 
-# ---------------------- PÁGINA WEB -------------------------------
+# ---------------------- PAGINA WEB -------------------------------
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -102,35 +102,50 @@ def gamepad():
 	gp = request.json
 	global presionado
 
-	# Propulsores verticales
 	RVax = gp['axes']['RV']
-	if RVax > 0.1 or RVax < -0.1: 
-		props.set_vel_vertical(RVax)
-	else:
-		props.set_vel_vertical(0)
+	props.set_vel_vertical(RVax)
 
-	# Propulsores horizontales
 	RHax = gp['axes']['RH']
-	if RHax > 0.1 or RHax < -0.1: 
-		PX4.girar(RHax)
-	else:
-		PX4.girar(0)
+	PX4.girar(RHax)
 
 	LVax = gp['axes']['LV']
-	if LVax > 0.1 or LVax < -0.1: 
-		PX4.avanzar(LVax)
-	else:
-		PX4.avanzar(0)
+	PX4.avanzar(LVax)
 
 	LHax = gp['axes']['LH']
-	if LHax > 0.1 or LHax < -0.1: 
-		PX4.lateral(LHax)
-	else:
-		PX4.lateral(0)
+	PX4.lateral(LHax)
+	
+
+	# Propulsores verticales
+	# RVax = gp['axes']['RV']
+	# if RVax > 0.1 or RVax < -0.1: 
+	# 	props.set_vel_vertical(RVax)
+	# else:
+	# 	props.set_vel_vertical(0)
+
+	# # Propulsores horizontales
+	# RHax = gp['axes']['RH']
+	# if RHax > 0.1 or RHax < -0.1: 
+	# 	PX4.girar(RHax)
+	# else:
+	# 	PX4.girar(0)
+
+	# LVax = gp['axes']['LV']
+	# if LVax > 0.1 or LVax < -0.1: 
+	# 	PX4.avanzar(LVax)
+	# else:
+	# 	PX4.avanzar(0)
+
+	# LHax = gp['axes']['LH']
+	# if LHax > 0.1 or LHax < -0.1: 
+	# 	PX4.lateral(LHax)
+	# else:
+	# 	PX4.lateral(0)
 	
 	#Luces
 	if gp['buttons']['R1'] and not presionado:
 		presionado = True
+		luces.switch()
+		print('SWITCH!')
 	if not gp['buttons']['R1']:
 		presionado = False
 

@@ -16,4 +16,4 @@ const actualizar_tabla = function () {
 }
 
 // realiza una accion cada 50 ms
-var actTablaID = window.setInterval(actualizar_tabla,50)
+var sondaID = window.setInterval(actualizar_tabla,50)

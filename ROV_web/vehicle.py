@@ -34,14 +34,14 @@ class Vehicle:
 		1, 0, 0, 0, 0, 0, 0)
 
 		# wait until arming confirmed
-		print("Armando motores...")
+		print("Armando motores horizontales...")
 		start_time = time.time()
 		while time.time()-start_time < timeout or not self.master.motors_armed():
 			self.master.wait_heartbeat()
 		if self.master.motors_armed():
-			print('Motores listos!')
+			print('Motores horizontales listos!')
 		else:
-			print("No se pudo armar los motores, intentando nuevamente...")
+			print("No se pudo armar los motores horizontales, intentando nuevamente...")
 			self.arm()
 			# raise Exception("No se pudo iniciar el motor")
 			# NOTA: A veces los motores no se pueden iniciar por alguna razon
@@ -58,6 +58,7 @@ class Vehicle:
 		# Apaga todos los motores (PWM 0)
 		for i in range(8):
 			self.set_servo_pwm(i+1,0)
+		print('Motores horizontales apagados!')
 
 	def set_servo_pwm(self, servo_n, us):
 		"""
@@ -166,6 +167,7 @@ class Vehicle:
 
 		self.t = threading.Thread(target=self.receive_data, daemon=True)
 		self.t.start()
+		print("Transmitiendo datos de la Pixhawk!")
 
 	def stop_data_rx(self):
 		""" Termina el thread de adquisición y espera a que este acabe. """
@@ -179,4 +181,5 @@ class Vehicle:
 	def close_conn(self):
 		""" Cierra la conexión. """
 		self.master.close()
+		print('Pixhawk desconectada!')
 
