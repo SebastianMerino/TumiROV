@@ -17,7 +17,7 @@ def datos_px4():
 	att_dict = dict(zip(['roll','pitch','yaw'],PX4.attitude))
 	v_dict = dict(zip(['vx','vy','vz'],PX4.velocity))
 	datos_dict = {'attitude':att_dict, 'velocity':v_dict,
-		'time_boot':PX4.time_boot, 'motors': PX4.motors_vel}
+		'time_boot':PX4.time_boot, 'motors': PX4.motors}
 	return json.dumps(datos_dict)
 
 if __name__ == '__main__':

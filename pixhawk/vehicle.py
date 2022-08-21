@@ -16,16 +16,23 @@ class Vehicle:
 		self.attitude = []
 		self.velocity = []
 		self.vel_mod = 0
-		self.motors_vel = [0,0,0,0]
+		self.pwm = [0,0,0,0,0,0,0,0]
+		self.motors = [0,0,0,0]
 		self.time_boot = 0
-		self.receiving = True
 		self.MAX_PWM = 1700
+		self.Rx = False
+		self.Tx = False
 		self.master.wait_heartbeat()
+	
+	def set_pwm(self, channel, us):
+		""" Envía una PWM al canal FMU con un tiempo en alta en microsegundos """
+		self.master.set_servo(channel+8, us)
 
 	def arm(self,timeout=5):
 		"""
-		Envía el comando para habilitar los motores y espera a que estén habilitados
-		args:
+		Envía el comando para habilitar los motores
+		Espera a que estén habilitados según timeout
+		Empieza thread de transmisión de datos a los motores
 			timeout: Tiempo máximo de espera.
 		"""
 		self.master.mav.command_long_send(
@@ -47,40 +54,39 @@ class Vehicle:
 			# NOTA: A veces los motores no se pueden iniciar por alguna razon
 			#       que desconozco. Sin embargo, al segundo intento, funciona.
 		
-		for i in range(8):
-			self.set_servo_pwm(i+1,0)
-	
-	def disarm(self):
-		"""
-		Envía el comando para deshabilitar los motores y espera
-		a que estén deshabilitados.
-		"""
-		# Apaga todos los motores (PWM 0)
-		for i in range(8):
-			self.set_servo_pwm(i+1,0)
+		for i in range(1,9):
+			self.set_pwm(i,1100)
 
-	def set_servo_pwm(self, servo_n, us):
-		"""
-		Sets 'servo_n' output PWM pulse-width.
-			servo_n: PWM port to set from FMU PWM (1-8)
-			us: PWM pulse-width in microseconds. Between 1100 and 1900
-		"""
-		self.master.set_servo(servo_n+8, us)
+		self.thrTx = threading.Thread(target=self.update_motors, daemon=True)
+		self.Tx = True
+		self.thrTx.start()
 
-	def set_motor(self,n,vel):
+	def update_motors(self):
+		while self.Tx:
+			for i in range(8):
+				self.set_pwm(i+1,self.pwm[i])
+
+	def set_vel_motor(self,n,vel):
 		"""
 		Coloca uno de los 4 motores a una velocidad (normalizada de -1 a 1)
 		"""
 		rango = self.MAX_PWM - 1100
 		if vel>=0:
-			pwm = vel*rango + 1100
-			self.set_servo_pwm(n+4,1100)
-			self.set_servo_pwm(n,pwm)
+			pwm = int(vel*rango) + 1100
+			self.pwm[n+3] = 1100
 		else:
-			pwm = (-vel)*rango + 1100
-			self.set_servo_pwm(n+4,1900)
-			self.set_servo_pwm(n,pwm)
-		self.motors_vel[n-1] = vel
+			pwm = int(-vel*rango) + 1100
+			self.pwm[n+3] = 1100
+		self.pwm[n-1] = pwm
+		self.motors[n-1] = vel
+
+	def disarm(self):
+		""" Termina el thread de transmision y 
+		apaga todos los motores (PWM 0) """
+		self.Tx = False
+		self.thrTx.join()
+		for i in range(1,9):
+			self.set_pwm(i,1100)
 
 	def avanzar(self,vel):
 		self.set_motor(1,vel)
