@@ -3,6 +3,7 @@ from propulsores import Propulsores
 import logging
 
 props = Propulsores('/dev/ttyUSB0')
+props.start_tx()
 
 # Empezar app de Flask sin log
 app = Flask(__name__)
@@ -27,11 +28,8 @@ def gamepad():
 	""" Esta función se llama cada vez que se actualiza info
 	del gamepad """
 	gp = request.json
-	RVax = gp['axes']['RV']
-	if RVax > 0.1 or RVax < -0.1: 
-		props.set_vel_vertical(RVax)
-	else:
-		props.set_vel_vertical(0)
+	RVax = gp['axes']['RV'] 
+	props.subir(RVax)
 	return jsonify(gp)
 
 if __name__ == '__main__':
@@ -40,4 +38,5 @@ if __name__ == '__main__':
 
 	# start the flask app
 	app.run(host=ip, port=p, debug=False, threaded=True, use_reloader=False)
+	props.stop_tx()
 	props.close()
