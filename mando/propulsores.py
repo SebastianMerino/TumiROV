@@ -1,11 +1,12 @@
-import serial, threading,time
+import serial, threading
+#import time
 
 class Propulsores():
     def __init__(self,port):
         """ Inicializa propulsores y puerto serial por el que se comunican """
         self.propIzq = Propulsor(0x61)
         self.propDer = Propulsor(0x62)
-        #self.ser = serial.Serial(port = port, baudrate=115200, timeout=5)
+        self.ser = serial.Serial(port = port, baudrate=115200, timeout=5)
         self.Tx = False
         print('Propulsores verticales listos!')
 
@@ -18,11 +19,11 @@ class Propulsores():
     def update(self):
         """ Actualiza los datos enviados a los motores """
         while self.Tx:
-            #self.ser.write(self.propDer.packet)
-            #self.ser.write(self.propIzq.packet)
-            print(hex(self.propDer.packet))
-            print(hex(self.propIzq.packet),'\n')
-            time.sleep(1)
+            self.ser.write(self.propDer.packet)
+            self.ser.write(self.propIzq.packet)
+            #print(hex(self.propDer.packet))
+            #print(hex(self.propIzq.packet),'\n')
+            #time.sleep(1)
 
     def stop_tx(self):
         """ Finaliza el thread de Tx """
@@ -36,9 +37,9 @@ class Propulsores():
     
     def close(self):
         """ Apaga motores y cierra el puerto serial """
-        #self.ser.write(self.propDer.brakeCommand)
-        #self.ser.write(self.propIzq.brakeCommand)
-        #self.ser.close()
+        self.ser.write(self.propDer.brakeCommand)
+        self.ser.write(self.propIzq.brakeCommand)
+        self.ser.close()
         print('Propulsores verticales apagados!')
 
 class Propulsor():
