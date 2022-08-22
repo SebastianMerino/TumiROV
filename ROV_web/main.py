@@ -15,6 +15,7 @@ def buscar_puerto(name):
 
 # Propulsores
 props = Propulsores(buscar_puerto("AR0K003I"))
+props.start_tx()
 
 # Sonda
 idronaut = Sonda(buscar_puerto("AR0K3WI2"))
@@ -24,7 +25,7 @@ idronaut.start()
 # Pixhawk
 PX4 = Vehicle(buscar_puerto('Pixhawk'))
 PX4.arm()
-PX4.start_data_rx()
+PX4.start_rx()
 
 # Luces
 luces = JetsonPin(11)
@@ -92,7 +93,7 @@ def datos_px4():
 	att_dict = dict(zip(['roll','pitch','yaw'],PX4.attitude))
 	v_dict = dict(zip(['vx','vy','vz'],PX4.velocity))
 	datos_dict = {'attitude':att_dict, 'velocity':v_dict, 'vel_mod':PX4.vel_mod,
-		'time_boot':PX4.time_boot, 'motors': PX4.motors_vel}
+		'time_boot':PX4.time_boot, 'motors': PX4.motors}
 	return jsonify(datos_dict)
 
 presionado = False
@@ -103,7 +104,7 @@ def gamepad():
 	global presionado
 
 	RVax = gp['axes']['RV']
-	props.set_vel_vertical(RVax)
+	props.subir(RVax)
 
 	RHax = gp['axes']['RH']
 	PX4.girar(RHax)
@@ -114,13 +115,12 @@ def gamepad():
 	LHax = gp['axes']['LH']
 	PX4.lateral(LHax)
 	
-
 	# Propulsores verticales
 	# RVax = gp['axes']['RV']
 	# if RVax > 0.1 or RVax < -0.1: 
-	# 	props.set_vel_vertical(RVax)
+	# 	props.subir(RVax)
 	# else:
-	# 	props.set_vel_vertical(0)
+	# 	props.subir(0)
 
 	# # Propulsores horizontales
 	# RHax = gp['axes']['RH']
@@ -145,7 +145,6 @@ def gamepad():
 	if gp['buttons']['R1'] and not presionado:
 		presionado = True
 		luces.switch()
-		print('SWITCH!')
 	if not gp['buttons']['R1']:
 		presionado = False
 
@@ -165,8 +164,9 @@ if __name__ == '__main__':
 	vs2.stop()
 	idronaut.stop()
 	idronaut.shutdown()
+	props.stop_tx()
 	props.close()
 	luces.close()
-	PX4.stop_data_rx()
+	PX4.stop_rx()
 	PX4.disarm()
 	PX4.close_conn()
