@@ -24,9 +24,9 @@ if __name__ == '__main__':
 	ip = "127.0.0.1"
 	p = 8000			# Puerto
 
-	PX4.start_data_rx()
+	PX4.start_rx()
 
 	# start the flask app
 	app.run(host=ip, port=p, debug=False, threaded=True, use_reloader=False)
 
-PX4.stop_data_rx()
+PX4.stop_rx()
