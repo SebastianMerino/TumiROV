@@ -18,7 +18,7 @@ window.addEventListener('gamepaddisconnected', event => {
     gamepadInfo.innerHTML = "Esperando al Gamepad. Presione cualquier botón para comenzar."
 });
 
-// Escaneo de los botones cada 1 ms
+// Escaneo de los botones cada X ms
 setInterval(() => {
     if(gamepadIndex !== undefined) {
         // a gamepad is connected and has an index

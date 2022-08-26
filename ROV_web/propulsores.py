@@ -29,6 +29,7 @@ class Propulsores():
         """ Finaliza el thread de Tx """
         self.Tx = False
         self.thrTx.join()
+        print("Propulsores verticales apagados")
 
     def subir(self,vel):
         """ Manda la velocidad normalizada, positiva hacia arriba """
@@ -43,14 +44,14 @@ class Propulsores():
         print('Propulsores verticales apagados!')
 
 class Propulsor():
-    MAX_RPM = 3000      # Puede ser 5k o 7k
+    MAX_RPM = 5000      # Puede ser 5k o 7k
     def __init__(self, ID):
         """ Modifica las mascaras segun el ID e inicializa el RPM """
         self.setCWmask = (ID << 32) | 0x0041000000 | (ID + 0x36)
         self.setCCWmask = (ID << 32) | 0x0042000000 | (ID + 0x36)
         self.brakeCommand = (ID << 32) | 0x0043000000 | (ID + 0x36)
         self.vel = 0
-        self.packet = self.brakeCommand
+        self.packet = self.brakeCommand.to_bytes(5,'big')
     
     def set_speed_norm(self,vel):
         """
@@ -66,5 +67,5 @@ class Propulsor():
                 packet = self.setCCWmask | rpm<<8
             else:
                 packet = self.setCWmask | (-rpm)<<8
-        self.packet = packet
+        self.packet = packet.to_bytes(5,'big')
         self.vel = vel

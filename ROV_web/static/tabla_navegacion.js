@@ -28,5 +28,5 @@ const actualizar = function () {
   });
 }
 
-// realiza una accion cada 50 ms
-var navID = window.setInterval(actualizar,300)
+// Actualizar tabla cada X milisegundos
+var navID = window.setInterval(actualizar,100)

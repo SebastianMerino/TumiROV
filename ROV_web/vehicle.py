@@ -42,22 +42,19 @@ class Vehicle:
 		1, 0, 0, 0, 0, 0, 0)
 
 		# Espera a que los motores esten habilitados
-		print("Armando motores...")
+		print("Armando motores horizontales...")
 		start_time = time.time()
 		while time.time()-start_time < timeout or not self.master.motors_armed():
 			self.master.wait_heartbeat()
 		
 		if self.master.motors_armed():
-			# Empieza los threads de transmisión para actualizar las pwm
-			self.thrTx = []
+			# Empieza los threads de transmisión para actualizar las pwm			
 			self.Tx = True
-			for i in range(1,9):
-				t = threading.Thread(target=self.update_pwm, daemon=True, args=i)
-				t.start()
-				self.thrTx.append(t)
+			self.thrTx  = threading.Thread(target=self.update_pwm, daemon=True)
+			self.thrTx .start()
 			# Esperamos a que se envíen las pwm de 1100
 			self.master.wait_heartbeat()
-			print('Motores listos!')
+			print('Motores horizontales listos!')
 		else:
 			print("No se pudo armar los motores, intentando nuevamente...")
 			self.arm()
@@ -65,10 +62,12 @@ class Vehicle:
 			# NOTA: A veces los motores no se pueden iniciar por alguna razon
 			#       que desconozco. Sin embargo, al segundo intento, funciona.
 
-	def update_pwm(self,canal_n):
+	def update_pwm(self):
 		""" Actualiza la PWM de un canal FMU """
 		while self.Tx:
-			self.master.set_servo(canal_n+8,self.pwm[canal_n-1])
+			for i in reversed(range(8)):
+				# Los canales FMU son del 9-16, las pwm estan en pwm[i]
+				self.master.set_servo(i+9,self.pwm[i])
 
 	def set_vel_motor(self,motor_n,vel):
 		"""
@@ -87,31 +86,33 @@ class Vehicle:
 	def disarm(self):
 		""" Termina el thread de transmision y 
 		apaga todos los motores (PWM 0) """
-		self.Tx = False
-		for t in self.thrTx:
-			t.join()
 		for i in range(1,5):
 			self.set_vel_motor(i,0)
-		for i in range(8):
-			self.update_pwm(i)
+		# Espera
+		self.master.wait_heartbeat()
+		self.master.wait_heartbeat()
+		
+		self.Tx = False
+		self.thrTx.join()
+		print("Propulsores horizontales apagados")
 
 	def avanzar(self,vel):
-		self.set_motor(1,vel)
-		self.set_motor(2,vel)
-		self.set_motor(3,vel)
-		self.set_motor(4,vel)
+		self.set_vel_motor(1,-vel)
+		self.set_vel_motor(2,-vel)
+		self.set_vel_motor(3,-vel)
+		self.set_vel_motor(4,-vel)
 
 	def lateral(self,vel):
-		self.set_motor(1,vel)
-		self.set_motor(2,vel)
-		self.set_motor(3,vel)
-		self.set_motor(4,vel)
+		self.set_vel_motor(1,vel)
+		self.set_vel_motor(2,-vel)
+		self.set_vel_motor(3,-vel)
+		self.set_vel_motor(4,vel)
 
 	def girar(self,vel):
-		self.set_motor(1,vel)
-		self.set_motor(2,vel)
-		self.set_motor(3,vel)
-		self.set_motor(4,vel)
+		self.set_vel_motor(1,vel)
+		self.set_vel_motor(2,-vel)
+		self.set_vel_motor(3,vel)
+		self.set_vel_motor(4,-vel)
 
 	def request_message_interval(self, message_id: int, frequency_hz: float):
 		"""
@@ -137,6 +138,7 @@ class Vehicle:
 			msg_gp = self.master.recv_match(type='GLOBAL_POSITION_INT')
 			if msg_att is not None:
 				att_dict = msg_att.to_dict()
+				print(att_dict)
 				self.attitude = [att_dict['roll'], att_dict['pitch'], att_dict['yaw']]
 				self.time_boot = att_dict['time_boot_ms']/1000
 			if msg_gp is not None:
@@ -161,11 +163,13 @@ class Vehicle:
 
 		self.thrRx = threading.Thread(target=self.receive_data, daemon=True)
 		self.thrRx.start()
+		print("Comenzado el thread de adquisición de la Pixhawk")
 
 	def stop_rx(self):
 		""" Termina el thread de adquisición y espera a que este acabe. """
 		self.Rx = False
 		self.thrRx.join()
+		print("Terminado el thread de adquisición de la Pixhawk")
 
 	def reboot(self):
 		""" Reinicia la Pixhawk. """
@@ -174,4 +178,5 @@ class Vehicle:
 	def close_conn(self):
 		""" Cierra la conexión. """
 		self.master.close()
+		print("Conexion con la Pixhawk terminada")
 
