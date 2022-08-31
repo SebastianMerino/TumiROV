@@ -138,7 +138,7 @@ class Vehicle:
 			msg_gp = self.master.recv_match(type='GLOBAL_POSITION_INT')
 			if msg_att is not None:
 				att_dict = msg_att.to_dict()
-				print(att_dict)
+				#print(att_dict)
 				self.attitude = [att_dict['roll'], att_dict['pitch'], att_dict['yaw']]
 				self.time_boot = att_dict['time_boot_ms']/1000
 			if msg_gp is not None:
@@ -161,6 +161,7 @@ class Vehicle:
 		global_pos = master.recv_match(type='GLOBAL_POSITION_INT',blocking=True).to_dict()
 		self.velocity = [global_pos['vx']/100, global_pos['vy']/100, global_pos['vz']/100]
 
+		self.Rx = True
 		self.thrRx = threading.Thread(target=self.receive_data, daemon=True)
 		self.thrRx.start()
 		print("Comenzado el thread de adquisición de la Pixhawk")
@@ -179,4 +180,3 @@ class Vehicle:
 		""" Cierra la conexión. """
 		self.master.close()
 		print("Conexion con la Pixhawk terminada")
-

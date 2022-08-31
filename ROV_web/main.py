@@ -15,7 +15,7 @@ def buscar_puerto(name):
 
 # Propulsores
 props = Propulsores(buscar_puerto("AR0K003I"))
-Propulsor.MAX_RPM = 5000
+Propulsor.MAX_RPM = 6000
 props.start_tx()
 
 # Sonda
@@ -97,7 +97,6 @@ def datos_px4():
 	v_dict = dict(zip(['vx','vy','vz'],PX4.velocity))
 	datos_dict = {'attitude':att_dict, 'velocity':v_dict, 'vel_mod':PX4.vel_mod,
 		'time_boot':PX4.time_boot, 'motors': PX4.motors}
-	print(datos_dict)
 	return jsonify(datos_dict)
 
 presionado = False
